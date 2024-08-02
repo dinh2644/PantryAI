@@ -69,29 +69,27 @@ const HomePage = () => {
 
     }
 
-    console.log(item);
-
 
     return (
         <>
             <div className="flex m-10">
                 {/* Left side */}
-                <div className="w-1/2 h-12">
+                <div className="w-2/5 h-12">
                     {/* Inputs */}
                     <div>
                         {/* Name */}
                         <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label htmlFor="name">Name</Label>
+                            <Label htmlFor="name" className='font-semibold'>Name</Label>
                             <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
                         </div>
                         {/* Quantity */}
                         <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label htmlFor="quantity">Quantity</Label>
+                            <Label htmlFor="quantity" className='font-semibold'>Quantity</Label>
                             <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
                         </div>
                         {/* Unit dropdown */}
                         <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label>Unit</Label>
+                            <Label className='font-semibold'>Unit</Label>
                             <Select value={item.unit} onValueChange={handleUnitChange}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Select unit" />
@@ -102,25 +100,27 @@ const HomePage = () => {
                                     <SelectItem value="milliliter">ml</SelectItem>
                                     <SelectItem value="teaspoon">tsp</SelectItem>
                                     <SelectItem value="tablespoon">tbsp</SelectItem>
+                                    <SelectItem value="cup">cup</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
 
                         {/* Add item button */}
                         <div className='py-4 flex '>
-                            <Button onClick={handleCreate} className='mr-2'>Add to pantry</Button>
-                            <Button variant="secondary" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
+                            <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
+                            <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
+                            <Input id="picture" type="file" className='w-6/12' />
                         </div>
                     </div>
 
 
                     {/* Pantry items */}
-                    <Label>Pantry Items</Label>
+                    <Label className='font-semibold'>Pantry Items</Label>
                     <PantryItems />
                 </div>
 
                 {/* Right side */}
-                <div className="w-1/2 h-12">
+                <div className="w-3/5 h-12">
 
                 </div>
             </div>

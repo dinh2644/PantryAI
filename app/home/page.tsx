@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { auth } from "../../firebase"
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/navigation';
@@ -18,6 +18,7 @@ import { PantryItem } from '../firebase/actions';
 import { Button } from '@/components/ui/button';
 import { createItem } from '../firebase/actions';
 import { toast } from 'react-hot-toast';
+import { Camera, CameraType } from "react-camera-pro";
 
 
 
@@ -31,7 +32,10 @@ const HomePage = () => {
         quantity: 0,
         unit: "",
     })
-
+    const camera = useRef<any>(null);
+    const [image, setImage] = useState<string | null>(null);
+    const [numberOfCameras, setNumberOfCameras] = useState(0);
+    const [isCameraOn, setIsCameraOn] = useState(false);
 
     if (loading) {
         return <Loading />
@@ -68,6 +72,18 @@ const HomePage = () => {
         await createItem(item.name, item.quantity, item.unit)
 
     }
+
+    const handleTakePhoto = () => {
+        if (camera.current) {
+            const photo = camera.current.takePhoto();
+            if (typeof photo === 'string') {
+                setImage(photo);
+                // setIsCameraOn(false);
+            } else {
+                console.log('Photo taken as ImageData object');
+            }
+        }
+    };
 
 
     return (
@@ -109,7 +125,7 @@ const HomePage = () => {
                         <div className='py-4 flex '>
                             <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
                             <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
-                            <Input id="picture" type="file" className='w-6/12' />
+
                         </div>
                     </div>
 
@@ -121,6 +137,36 @@ const HomePage = () => {
 
                 {/* Right side */}
                 <div className="w-3/5 h-12">
+                    <div className="flex">
+                        <div style={{ width: '350px', height: '250px' }} className='flex flex-col'>
+                            {isCameraOn ? (
+                                <Camera
+                                    ref={camera}
+                                    aspectRatio={4 / 3}
+                                    numberOfCamerasCallback={setNumberOfCameras}
+                                    facingMode="user"
+                                    errorMessages={{
+                                        noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
+                                        permissionDenied: 'Permission denied. Please refresh and give camera permission.',
+                                        switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
+                                        canvas: 'Canvas is not supported.'
+                                    }}
+                                />
+                            ) : (
+                                <div style={{ width: '100%', height: '100%', backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff' }}>
+                                    Camera is off
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Camera buttons */}
+                        <Button onClick={() => { setIsCameraOn(!isCameraOn); setImage(null) }} className='bg-slate-500'>{isCameraOn ? 'Turn Camera Off' : 'Turn Camera On'}</Button>
+                        {isCameraOn && <Button onClick={handleTakePhoto} className='bg-green-600'>Take Photo</Button>}
+                        {numberOfCameras > 1 && isCameraOn && (
+                            <Button className='bg-orange-700' onClick={() => camera.current?.switchCamera()}>Switch Camera</Button>
+                        )}
+                        {image && <img src={image} alt='Taken photo' style={{ maxWidth: "400px" }} />}
+                    </div>
 
                 </div>
             </div>

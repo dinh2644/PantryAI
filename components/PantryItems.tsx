@@ -31,7 +31,7 @@ const PantryItems = ({ pantry, fetchPantry }: PantryItemsProps) => {
     return (
         <>
 
-            <div className="overflow-y-auto flex-grow  max-h-[calc(100vh-450px)]  bg-white rounded-lg w-full px-32 boxContainer">
+            <div className="overflow-y-auto flex-grow  max-h-[calc(100vh-450px)]  bg-white rounded-lg w-full px-48 boxContainer">
                 <Label className='font-semibold text-lg'>Pantry Items</Label>
                 <div className="text-gray-600 text-sm mb-3">
                     Sorted by quantity

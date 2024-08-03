@@ -26,7 +26,7 @@ const Webcam = () => {
     return (
         <>
             {/* Camera */}
-            <div className="flex overflow-y-auto flex-grow justify-center items-center py-2 max-h-[calc(100vh-450px)] p-6 bg-white rounded-lg w-full min-h-64 boxContainer">
+            <div className="flex overflow-y-auto flex-grow justify-center items-center py-2 max-h-[calc(100vh-450px)] px-64 bg-white rounded-lg w-full min-h-64 boxContainer">
                 <div className='flex flex-col w-80'>
                     {isCameraOn ? (
                         <Camera

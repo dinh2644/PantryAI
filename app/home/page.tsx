@@ -101,7 +101,7 @@ const HomePage = () => {
                 {/* Left side */}
                 <div className="w-1/2 h-12">
                     {/* Inputs */}
-                    <div className="overflow-y-auto flex-grow max-h-[calc(100vh-450px)] bg-white rounded-lg w-full px-32 py-2 boxContainer">
+                    <div className="overflow-y-auto flex-grow max-h-[calc(100vh-450px)] bg-white rounded-lg w-full px-48 py-2 boxContainer">
 
                         {/* Name */}
                         <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -135,7 +135,7 @@ const HomePage = () => {
                         </div>
 
                         {/* Add item button */}
-                        <div className='py-4 flex '>
+                        <div className='py-2 flex '>
                             <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
                             <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
 

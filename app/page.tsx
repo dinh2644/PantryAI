@@ -4,10 +4,7 @@
 // import { PantryItem } from "./firebase/actions";
 
 // // Firestore CRUD operations
-// import { createItem } from "./firebase/actions";
-// import { getPantry } from "./firebase/actions";
-// import { updateItem } from "./firebase/actions";
-// import { deleteItem } from "./firebase/actions";
+
 import React from 'react'
 import DogIcon from "../public/dog.png"
 import { auth } from "../firebase"

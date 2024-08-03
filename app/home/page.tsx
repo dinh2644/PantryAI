@@ -14,14 +14,12 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import PantryItems from '@/components/PantryItems';
-import { PantryItem } from '../firebase/actions';
+import { PantryItem } from '../supabase/actions';
 import { Button } from '@/components/ui/button';
-import { createItem } from '../firebase/actions';
 import { toast } from 'react-hot-toast';
-import { Camera, CameraType } from "react-camera-pro";
-
-
-
+import Recipe from '@/components/Recipe'
+import { supabase } from '../../app/client';
+import Webcam from '@/components/Webcam';
 
 
 const HomePage = () => {
@@ -32,20 +30,14 @@ const HomePage = () => {
         quantity: 0,
         unit: "",
     })
-    const camera = useRef<any>(null);
-    const [image, setImage] = useState<string | null>(null);
-    const [numberOfCameras, setNumberOfCameras] = useState(0);
-    const [isCameraOn, setIsCameraOn] = useState(false);
+    const [pantry, setPantry] = useState<PantryItem[]>([])
 
     if (loading) {
         return <Loading />
     }
-
-
     if (!user) {
         return router.push("/")
     }
-
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
@@ -62,6 +54,23 @@ const HomePage = () => {
         }))
     }
 
+    // Handle fetch pantry items
+    // fetch pantry items
+    const fetchPantry = async () => {
+        const { data } = await supabase
+            .from("pantry")
+            .select()
+            .order("quantity", { ascending: false });
+
+        if (data) {
+            setPantry(data as PantryItem[]);
+        } else {
+            setPantry([]);
+        }
+
+    }
+
+    // Handle create pantry item
     const handleCreate = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
 
@@ -69,43 +78,47 @@ const HomePage = () => {
             toast.error("Inputs cannot be empty")
             return;
         }
-        await createItem(item.name, item.quantity, item.unit)
+        const { error } = await supabase.from("pantry").insert(item);
 
-    }
+        if (error) {
+            console.log(error);
+            toast.error("Can't create item")
+        } else {
+            setItem({
+                name: "",
+                quantity: 0,
+                unit: ""
+            });
 
-    const handleTakePhoto = () => {
-        if (camera.current) {
-            const photo = camera.current.takePhoto();
-            if (typeof photo === 'string') {
-                setImage(photo);
-                // setIsCameraOn(false);
-            } else {
-                console.log('Photo taken as ImageData object');
-            }
+            fetchPantry()
         }
-    };
+    }
 
 
     return (
         <>
-            <div className="flex m-10">
+            <div className="flex mx-10 my-5">
                 {/* Left side */}
-                <div className="w-2/5 h-12">
+                <div className="w-1/2 h-12">
                     {/* Inputs */}
-                    <div>
+                    <div className="overflow-y-auto flex-grow max-h-[calc(100vh-450px)] bg-white rounded-lg w-full px-32 py-2 boxContainer">
+
                         {/* Name */}
-                        <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label htmlFor="name" className='font-semibold'>Name</Label>
+                        <div className="grid w-full max-w-sm items-center gap-1.5">
+                            <Label htmlFor="name" className='font-semibold text-lg'>Name</Label>
                             <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
                         </div>
                         {/* Quantity */}
                         <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label htmlFor="quantity" className='font-semibold'>Quantity</Label>
+                            <Label htmlFor="quantity" className='font-semibold text-lg'>Quantity</Label>
                             <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
+                            <div className="text-gray-600 text-sm pl-1 ">
+                                Whole number only
+                            </div>
                         </div>
                         {/* Unit dropdown */}
                         <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label className='font-semibold'>Unit</Label>
+                            <Label className='font-semibold text-lg'>Unit</Label>
                             <Select value={item.unit} onValueChange={handleUnitChange}>
                                 <SelectTrigger className="w-[180px]">
                                     <SelectValue placeholder="Select unit" />
@@ -131,44 +144,18 @@ const HomePage = () => {
 
 
                     {/* Pantry items */}
-                    <Label className='font-semibold'>Pantry Items</Label>
-                    <PantryItems />
+                    <PantryItems pantry={pantry} fetchPantry={fetchPantry} />
                 </div>
 
                 {/* Right side */}
-                <div className="w-3/5 h-12">
-                    <div className="flex">
-                        <div style={{ width: '350px', height: '250px' }} className='flex flex-col'>
-                            {isCameraOn ? (
-                                <Camera
-                                    ref={camera}
-                                    aspectRatio={4 / 3}
-                                    numberOfCamerasCallback={setNumberOfCameras}
-                                    facingMode="user"
-                                    errorMessages={{
-                                        noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
-                                        permissionDenied: 'Permission denied. Please refresh and give camera permission.',
-                                        switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
-                                        canvas: 'Canvas is not supported.'
-                                    }}
-                                />
-                            ) : (
-                                <div style={{ width: '100%', height: '100%', backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff' }}>
-                                    Camera is off
-                                </div>
-                            )}
-                        </div>
+                <div className="w-1/2 h-12">
+                    {/* Camera */}
+                    <Webcam />
 
-                        {/* Camera buttons */}
-                        <Button onClick={() => { setIsCameraOn(!isCameraOn); setImage(null) }} className='bg-slate-500'>{isCameraOn ? 'Turn Camera Off' : 'Turn Camera On'}</Button>
-                        {isCameraOn && <Button onClick={handleTakePhoto} className='bg-green-600'>Take Photo</Button>}
-                        {numberOfCameras > 1 && isCameraOn && (
-                            <Button className='bg-orange-700' onClick={() => camera.current?.switchCamera()}>Switch Camera</Button>
-                        )}
-                        {image && <img src={image} alt='Taken photo' style={{ maxWidth: "400px" }} />}
-                    </div>
+                    <Recipe pantry={pantry} />
 
                 </div>
+
             </div>
 
 

@@ -4,7 +4,6 @@ import { Button } from './ui/button';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { PantryItem } from '@/app/supabase/actions';
 import { Loader2 } from "lucide-react"
-import html2canvas from "html2canvas-pro"
 import jsPDF from "jspdf"
 
 interface RecipeProps {

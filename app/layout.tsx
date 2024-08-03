@@ -17,7 +17,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-theme="cupcake">
-      <body className={varela.className}><Toaster position="bottom-center" /> {children}</body>
+      <body className={varela.className}><Toaster position="bottom-center" /> {children}
+
+      </body>
     </html>
   );
 }

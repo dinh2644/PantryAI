@@ -13,15 +13,13 @@ import {
 import React, { useEffect, useRef, useState } from 'react'
 import { Camera } from "react-camera-pro";
 import { Button } from '@/components//ui/button';
-import WebcamLogo from "../../public/webcam.png"
-import Image from 'next/image';
 import { GenerateContentResult, GoogleGenerativeAI } from '@google/generative-ai';
 import { Buffer } from 'buffer';
 import { PantryItem } from '../app/supabase/actions'
 import { supabase } from '../app/client';
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
-import { usePantry } from '../app/PantryContext';
+import { usePantry } from '@/app/supabase/PantryContext';
 
 
 const Webcam = () => {

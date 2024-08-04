@@ -1,93 +1,126 @@
 'use client'
-
-// import { useState, useEffect } from "react";
-// import { PantryItem } from "./firebase/actions";
-
-// // Firestore CRUD operations
-
-import React from 'react'
-import PantryIcon from "../public/pantry.png"
-import { auth } from "../firebase"
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
-import { Button } from "@/components/ui/button"
-import Image from 'next/image'
-import Google from "../public/google.png"
-import { useAuthState } from "react-firebase-hooks/auth"
-import { useRouter } from 'next/navigation';
-import Loading from "../components/Loading"
-
+import React, { useState, useTransition } from 'react'
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import PantryItems from '@/components/PantryItems';
+import { createItem, PantryItem } from './supabase/actions';
+import { Button } from '@/components/ui/button';
+import { toast } from 'react-hot-toast';
+import Navbar from "@/components/Navbar";
 
 
-export default function Landing() {
-  const googleAuth = new GoogleAuthProvider();
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+const HomePage = () => {
+  const [item, setItem] = useState<PantryItem>({
+    name: "",
+    quantity: 0,
+    unit: "",
+  })
+  const [isPending, startTransition] = useTransition()
 
 
-  if (loading) {
-    return <Loading />
+  // Handle create item
+  const handleCreate = async () => {
+
+    startTransition(async () => {
+      if (item.name === '' || item.quantity === 0 || item.unit === '') {
+        toast.error("Inputs cannot be empty");
+        return;
+      }
+
+      try {
+        await createItem(item);
+        setItem({
+          name: "",
+          quantity: 0,
+          unit: ""
+        });
+        toast.success("Item created successfully");
+      } catch (error) {
+        console.error('Error creating item:', error);
+        toast.error("Can't create item");
+      }
+    });
+  };
+
+
+  // Handling change
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setItem((prev) => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
-  // Check first if user is signed in
-  if (user) {
-    router.push("/home");
-  }
-
-  // Handle login
-  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault()
-    try {
-      await signInWithPopup(auth, googleAuth);
-      router.push("/home")
-
-
-    } catch (error) {
-      console.error(error);
-
-    }
+  const handleUnitChange = (value: string) => {
+    setItem((prev) => ({
+      ...prev,
+      unit: value
+    }))
   }
 
   return (
     <>
-      <main className="min-h-screen flex flex-col justify-center items-center">
-        {/* Icon and PantryText */}
-        <div className="flex justify-center items-center">
-          <Image
-            src={PantryIcon}
-            width={150}
-            height={150}
-            alt="Picture of cartoon shiba inu"
-            className="mr-5"
-          />
-          <div className="flex flex-col">
-            <h1 className="text-6xl">PantryAI</h1>
-            <div className='text-gray-600 font-medium text-lg pl-1 pt-1'>Your AI-Assistant Pantry UI</div>
+      <Navbar />
+      <div className="pt-16 sm:pt-0 flex flex-col sm:flex-row justify-center items-center min-h-screen gap-10">
+
+        {/* Inputs */}
+        <div className="shadow-xl w-auto sm:w-4/12 flex flex-col justify-center items-center rounded-3xl px-4">
+
+          {/* Form input */}
+          <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pt-10">
+            <Label htmlFor="name" className='font-semibold text-lg sm:text-2xl'>Name</Label>
+            <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
+          </div>
+          <div className="grid w-full max-w-sm items-center gap-2.5 py-2">
+            <Label htmlFor="quantity" className='font-semibold text-lg sm:text-2xl'>Quantity</Label>
+            <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
+            <div className="text-gray-600 text-xs sm:text-sm pl-1 ">
+              Whole number only
+            </div>
+          </div>
+          <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pb-5">
+            <Label className='font-semibold text-lg sm:text-2xl'>Unit</Label>
+            <Select value={item.unit} onValueChange={handleUnitChange}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="piece">pc</SelectItem>
+                <SelectItem value="gram">g</SelectItem>
+                <SelectItem value="milliliter">ml</SelectItem>
+                <SelectItem value="teaspoon">tsp</SelectItem>
+                <SelectItem value="tablespoon">tbsp</SelectItem>
+                <SelectItem value="cup">cup</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className='py-2 flex pb-10'>
+            <form onSubmit={handleCreate}>
+              <Button className='mr-2 bg-black text-xs sm:text-sm' type='submit' disabled={isPending}>{isPending ? 'Adding...' : 'Add to Pantry'}</Button>
+            </form>
+            <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
+
+
 
           </div>
-
         </div>
-        <div className="flex flex-col justify-center items-center">
-          {/* Google sign in button */}
-          <Button className="bg-black rounded-lg w-60 p-7 my-5 mt-12"
-            onClick={handleLogin}
-          >
-            <Image
-              src={Google}
-              width={30}
-              height={30}
-              alt="Picture of cartoon shiba inu"
-              className="mr-2"
-            />
-            <span className="text-white font-semibold text-lg">Sign in with Google</span>
-          </Button>
-          {/* Waitlist */}
-          <Button className="bg-gray-300 rounded-lg w-52 p-7 hover:bg-gray-200">
-            <span className="text-black font-semibold text-lg">Join waitlist</span>
-          </Button>
 
-        </div>
-      </main>
+
+        {/* Pantry items */}
+        <PantryItems />
+
+      </div>
+
     </>
-  );
-
+  )
 }
+
+export default HomePage

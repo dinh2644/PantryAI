@@ -3,9 +3,8 @@
 import React, { useState } from "react"
 import Link from 'next/link'
 import { Menu, Search } from "lucide-react"
-import { auth } from "../firebase"
 import Webcam from "@/components/Webcam"
-
+import Profile from "./Profile"
 
 
 const Navbar = () => {
@@ -13,11 +12,12 @@ const Navbar = () => {
 
     return (
         <nav className="bg-white w-full border-b md:border-0 fixed">
+
             <div className="items-center px-4 max-w-screen-xl mx-auto md:flex md:px-8 md:justify-between ">
 
                 {/* Logo */}
                 <div className="flex items-center justify-between py-3 md:py-5 md:block">
-                    <Link href="/home">
+                    <Link href="/">
                         <h1 className="text-3xl font-bold text-black">PantryAI</h1>
                     </Link>
                     <div className="md:hidden">
@@ -37,10 +37,9 @@ const Navbar = () => {
                 >
                     <ul className="justify-center items-start md:items-center space-y-8 flex flex-col md:flex-row md:space-x-6 md:space-y-0">
 
-                        <Link href="/recipe" className=" text-gray-600 hover:scale-105 transform transition duration-y font-medium">Generate Recipe</Link>
+                        <Link href="/recipe" className=" text-gray-600 font-medium">Generate Recipe</Link>
                         <Webcam />
-                        <button className=" text-red-600 hover:scale-105 transform transition duration-y font-medium" onClick={() => auth.signOut()}>Logout</button>
-
+                        <Profile />
                     </ul>
                 </div>
 

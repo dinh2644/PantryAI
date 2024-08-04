@@ -22,13 +22,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { usePantry } from '../app/PantryContext';
 
-interface PantryItemsProps {
-    pantry: PantryItem[]
-    fetchPantry: () => void
-}
+const PantryItems = () => {
+    const { pantry, fetchPantry } = usePantry();
 
-const PantryItems = ({ pantry, fetchPantry }: PantryItemsProps) => {
     const [newValue, setNewValue] = useState<PantryItem>(
         {
             name: '',
@@ -99,100 +97,101 @@ const PantryItems = ({ pantry, fetchPantry }: PantryItemsProps) => {
 
     return (
         <>
-
-            <div className="overflow-y-auto flex-grow  max-h-[calc(100vh-450px)]  bg-white rounded-lg w-full px-48 boxContainer">
-                <Label className='font-semibold text-lg'>Pantry Items</Label>
-                <div className="text-gray-600 text-sm mb-3">
-                    Sorted by quantity
+            <div className="shadow-xl w-4/12 flex flex-col items-center rounded-3xl py-8 h-[calc(100vh-250px)]">
+                <div className="mb-4">
+                    <Label className='font-semibold text-2xl'>Pantry Items</Label>
+                    <div className="text-gray-600 text-md">
+                        Sorted by quantity
+                    </div>
                 </div>
-                {(pantry && pantry.length > 0) ? (
-                    pantry.map((item, index) => (
-                        <div key={index} className="flex justify-between gap-2 self-stretch py-3 border-b-2 border-gray-200 w-full">
-                            {/* Left side */}
-                            <div className='flex'>
 
-                                <div className="flex flex-col ml-2">
-                                    <div className="self-stretch text-black text-lg leading-5 font-medium">{item.name}</div>
-                                    <div className="self-stretch text-black/50 text-sm">Quantity: {item.quantity}</div>
+                <div className="overflow-y-auto">
+                    {(pantry && pantry.length > 0) ? (
+                        pantry.map((item) => (
+                            <div key={item.id} className="flex justify-between gap-40 self-stretch py-5 px-8 border-b-2">
+                                {/* Left side */}
+                                <div className="flex flex-col">
+                                    <div className=" text-black text-lg leading-5 font-medium">{item.name}</div>
+                                    <div className=" text-black/50 text-sm\">Quantity: {item.quantity}</div>
                                 </div>
+
+                                {/* Right side */}
+                                <div className='flex items-center'>
+                                    <div className="text-black text-right text-md leading-5 pr-4">Unit: {item.unit === 'piece' && 'pc' || item.unit === 'gram' && 'g' || item.unit === 'milliliter' && 'ml' || item.unit === 'teaspoon' && 'tsp' || item.unit === 'tablespoon' && 'tbsp' || item.unit === 'cup' && 'cup'}</div>
+                                    <Button variant="destructive" onClick={(e) => handleDelete(e, item.id!)} className='mr-2'>Delete</Button>
+                                    {/* <Button variant="outline">Edit</Button> */}
+                                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" onClick={() => setDialogOpen(true)}>Edit</Button>
+                                        </DialogTrigger>
+                                        <DialogContent className="sm:max-w-[425px]">
+                                            <DialogHeader>
+                                                <DialogTitle>Edit item</DialogTitle>
+                                                <DialogDescription>
+                                                    Make changes to this pantry item
+                                                </DialogDescription>
+                                            </DialogHeader>
+                                            <div className="grid gap-4 py-4">
+                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                    <Label htmlFor="name" className="text-right">
+                                                        Name
+                                                    </Label>
+                                                    <Input
+                                                        id="name"
+                                                        className="col-span-3"
+                                                        name="name"
+                                                        value={newValue.name}
+                                                        onChange={handleChange}
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                    <Label htmlFor="quantity" className="text-right">
+                                                        Quantity
+                                                    </Label>
+                                                    <Input
+                                                        id="quantity"
+                                                        className="col-span-3"
+                                                        name="quantity"
+                                                        value={newValue.quantity}
+                                                        onChange={handleChange}
+
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                    <Label htmlFor="unit" className="text-right">
+                                                        Unit
+                                                    </Label>
+                                                    <Select value={newValue.unit} onValueChange={handleUnitChange}>
+                                                        <SelectTrigger className="w-[180px]">
+                                                            <SelectValue placeholder="Select unit" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="piece">pc</SelectItem>
+                                                            <SelectItem value="gram">g</SelectItem>
+                                                            <SelectItem value="milliliter">ml</SelectItem>
+                                                            <SelectItem value="teaspoon">tsp</SelectItem>
+                                                            <SelectItem value="tablespoon">tbsp</SelectItem>
+                                                            <SelectItem value="cup">cup</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                            </div>
+                                            <DialogFooter>
+                                                <Button type="submit" onClick={(e) => handleEdit(e, item.id!)}>Save changes</Button>
+                                            </DialogFooter>
+                                        </DialogContent>
+                                    </Dialog>
+                                </div>
+
                             </div>
+                        ))
 
-                            {/* Right side */}
-                            <div className='flex items-center'>
-                                <div className="text-black text-right text-md leading-5 pr-4">Unit: {item.unit === 'piece' && 'pc' || item.unit === 'gram' && 'g' || item.unit === 'milliliter' && 'ml' || item.unit === 'teaspoon' && 'tsp' || item.unit === 'tablespoon' && 'tbsp' || item.unit === 'cup' && 'cup'}</div>
-                                <Button variant="destructive" onClick={(e) => handleDelete(e, item.id!)} className='mr-2'>Delete</Button>
-                                {/* <Button variant="outline">Edit</Button> */}
-                                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline" onClick={() => setDialogOpen(true)}>Edit</Button>
-                                    </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[425px]">
-                                        <DialogHeader>
-                                            <DialogTitle>Edit item</DialogTitle>
-                                            <DialogDescription>
-                                                Make changes to this pantry item
-                                            </DialogDescription>
-                                        </DialogHeader>
-                                        <div className="grid gap-4 py-4">
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="name" className="text-right">
-                                                    Name
-                                                </Label>
-                                                <Input
-                                                    id="name"
-                                                    className="col-span-3"
-                                                    name="name"
-                                                    value={newValue.name}
-                                                    onChange={handleChange}
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="quantity" className="text-right">
-                                                    Quantity
-                                                </Label>
-                                                <Input
-                                                    id="quantity"
-                                                    className="col-span-3"
-                                                    name="quantity"
-                                                    value={newValue.quantity}
-                                                    onChange={handleChange}
-
-                                                />
-                                            </div>
-                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                <Label htmlFor="unit" className="text-right">
-                                                    Unit
-                                                </Label>
-                                                <Select value={newValue.unit} onValueChange={handleUnitChange}>
-                                                    <SelectTrigger className="w-[180px]">
-                                                        <SelectValue placeholder="Select unit" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="piece">pc</SelectItem>
-                                                        <SelectItem value="gram">g</SelectItem>
-                                                        <SelectItem value="milliliter">ml</SelectItem>
-                                                        <SelectItem value="teaspoon">tsp</SelectItem>
-                                                        <SelectItem value="tablespoon">tbsp</SelectItem>
-                                                        <SelectItem value="cup">cup</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                            </div>
-                                        </div>
-                                        <DialogFooter>
-                                            <Button type="submit" onClick={(e) => handleEdit(e, item.id!)}>Save changes</Button>
-                                        </DialogFooter>
-                                    </DialogContent>
-                                </Dialog>
-                            </div>
-
-                        </div>
-                    ))
-
-                ) : (
-                    <blockquote className="mt-6 border-l-2 pl-6 italic">
-                        Pantry is empty
-                    </blockquote>
-                )}
+                    ) : (
+                        <blockquote className="m-48 border-l-2 pl-6 ">
+                            Empty
+                        </blockquote>
+                    )}
+                </div>
             </div>
         </>
 

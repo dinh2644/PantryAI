@@ -1,31 +1,74 @@
 'use client'
+
+import {
+    Drawer,
+    DrawerClose,
+    DrawerContent,
+    DrawerDescription,
+    DrawerFooter,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerTrigger,
+} from "@/components/ui/drawer"
 import React, { useEffect, useRef, useState } from 'react'
 import { Camera } from "react-camera-pro";
-import { Button } from './ui/button';
-import WebcamLogo from "../public/webcam.png"
+import { Button } from '@/components//ui/button';
+import WebcamLogo from "../../public/webcam.png"
 import Image from 'next/image';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GenerateContentResult, GoogleGenerativeAI } from '@google/generative-ai';
 import { Buffer } from 'buffer';
+import { PantryItem } from '../app/supabase/actions'
+import { supabase } from '../app/client';
+import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+import { usePantry } from '../app/PantryContext';
+
 
 const Webcam = () => {
+    const { fetchPantry } = usePantry();
     const [image, setImage] = useState<string | null>(null);
-    const [numberOfCameras, setNumberOfCameras] = useState<number>(0);
-    const [isCameraOn, setIsCameraOn] = useState<boolean>(false);
+    const drawerCloseRef = useRef<HTMLButtonElement>(null);
     const camera = useRef<any>(null);
+    const [item, setItem] = useState<PantryItem>({
+        name: "",
+        quantity: 0,
+        unit: "",
+    })
+    // console.log('item: ', item)
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
-    const handleTakePhoto = () => {
+    const handleTakePhoto = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        handleCaptureAndGenerate();
+    };
+
+    const handleCaptureAndGenerate = async () => {
         if (camera.current) {
-            const photo = camera.current.takePhoto();
-            if (typeof photo === 'string') {
-                setImage(photo);
-                // setIsCameraOn(false);
-            } else {
-                console.log('Photo taken as ImageData object');
+            setIsLoading(true);
+            try {
+                const photo = camera.current.takePhoto();
+                if (typeof photo === 'string') {
+                    setImage(photo);
+                    await generateContent(photo);
+                } else {
+                    console.log('Photo taken as ImageData object');
+                    toast.error("Unable to process photo");
+                }
+            } catch (error) {
+                console.error('Error capturing and generating:', error);
+                toast.error("Error processing photo");
+            } finally {
+                setIsLoading(false);
             }
         }
     };
 
+    useEffect(() => {
+        if (item.name && item.quantity && item.unit) {
+            handleCreate();
 
+        }
+    }, [item]);
 
     const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
     const MODEL_NAME = "gemini-1.5-flash"
@@ -33,80 +76,140 @@ const Webcam = () => {
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     const base64ToBuffer = (base64: string) => {
-        // Split the base64 string into metadata and data
         const [, data] = base64.split(',');
-        // Convert the data part to a Buffer
         return Buffer.from(data, 'base64');
     };
 
-    const generateContent = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault();
-        if (image) {
+    const generateContent = async (photo: string) => {
+        if (photo) {
             try {
                 // Convert base64 string to Buffer
-                const imageBuffer = base64ToBuffer(image);
+                const imageBuffer = base64ToBuffer(photo);
                 const imageInput = {
                     inlineData: {
                         data: imageBuffer.toString('base64'),
                         mimeType: "image/jpeg"
                     }
                 } as const;
-                const prompt = "Based on the image, identify the object and respond back with the following format: name_of_object, quantity_of_object, unit_of_object(pc/g/ml/tsp/tbsp/cup). If the object is not a pantry item, respond with 'null'.";
-                const result = await model.generateContent([prompt, imageInput]);
-                console.log(result.response.text());
+
+                const prompt = `
+                Analyze the image and identify the object. Respond strictly in this format without any additional text:
+
+                item_name, quantity, unit
+
+                Guidelines:
+                1. item_name: Use the most common, generic name for the item (e.g., "apple" not "Granny Smith apple")
+                2. quantity: Provide a numerical estimate. If unsure, default to 1.
+                3. unit: Use one of these units: pc (for countable items), g (for solid foods), ml (for liquids), tsp, tbsp, or cup (for cooking measurements)
+
+                Examples:
+                apple, 1, pc
+                milk, 1000, ml
+                sugar, 500, g
+                olive oil, 1, tbsp
+
+                Remember: Only respond with the item details in the specified format. Do not include any other text or explanations.
+                `;
+                const result: GenerateContentResult = await model.generateContent([prompt, imageInput]);
+
+                // add result to database
+                const resultArr = result.response.text().split(", ");
+                // console.log('resultArr: ', resultArr)
+                setItem({
+                    name: resultArr[0],
+                    quantity: parseInt(resultArr[1]),
+                    unit: resultArr[2],
+                })
             } catch (error) {
                 console.error('Error generating content:', error);
+                toast.error("Cannot identify object. Try again")
             }
         } else {
-            console.error('Image is not available');
+            console.error("Cannot identify object. Try again");
+            toast.error("Cannot identify object. Try again")
         }
     };
+
+    // Handle create pantry item
+    const handleCreate = async () => {
+        if (item.name === '' || item.quantity === 0 || item.unit === '') {
+            console.log("INPUTS CANT BE EMPTY: ", item)
+            toast.error("Inputs cannot be empty")
+            setIsLoading(false)
+            return;
+        }
+        const { error } = await supabase.from("pantry").insert(item);
+
+        if (error) {
+            console.log(error);
+            toast.error("Can't create item")
+        } else {
+            setItem({
+                name: "",
+                quantity: 0,
+                unit: ""
+            });
+
+            fetchPantry();
+            toast.success("Item added successfully");
+            closeDrawer();
+        }
+    }
+
+    const closeDrawer = () => {
+        drawerCloseRef.current?.click();
+    };
+
     return (
         <>
-            {/* Camera */}
-            <div className="flex overflow-y-auto flex-grow justify-center items-center py-2 max-h-[calc(100vh-450px)] px-64 bg-white rounded-lg w-full min-h-64 boxContainer">
-                <div className='flex flex-col w-80'>
-                    {isCameraOn ? (
-                        <Camera
-                            ref={camera}
-                            aspectRatio={4 / 3}
-                            numberOfCamerasCallback={setNumberOfCameras}
-                            facingMode="user"
-                            errorMessages={{
-                                noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
-                                permissionDenied: 'Permission denied. Please refresh and give camera permission.',
-                                switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
-                                canvas: 'Canvas is not supported.'
-                            }}
-                        />
-                    ) : (
-                        // <div style={{ width: '100%', height: '100%', backgroundColor: '#000', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#fff' }}>
-                        //     Camera is off
-                        // </div>
-                        <div className='font-semibold text-2xl'>Upload to Pantry with CameraAI 👉</div>
-                    )}
-                </div>
+            <Drawer>
+                <DrawerTrigger asChild>
+                    <Button variant="outline">Add with CameraAI</Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                    <div className="mx-auto w-full max-w-sm">
+                        <DrawerHeader className="mt-2">
+                            <DrawerTitle className="text-center">CameraAI</DrawerTitle>
+                            <DrawerDescription className="text-center">Scan your pantry item</DrawerDescription>
+                            {/* Camera content */}
+                            <div className="p-4 pb-0">
+                                <Camera
 
-                <div className="flex flex-col px-4">
-                    {/* Camera buttons */}
-                    {!isCameraOn ?
-                        <Image
-                            src={WebcamLogo}
-                            width={100}
-                            height={100}
-                            alt="Picture of the author"
-                            onClick={() => { setIsCameraOn(!isCameraOn) }}
-                            className='cursor-pointer hover:scale-110 transform transition duration-y'
-                        /> : <Button onClick={() => { setIsCameraOn(!isCameraOn); setImage(null) }} className='my-1 bg-red-600'>'Turn Camera Off' </Button>}
+                                    ref={camera}
+                                    aspectRatio={4 / 3}
+                                    facingMode="user"
+                                    errorMessages={{
+                                        noCameraAccessible: 'No camera device accessible. Please connect your camera or try a different browser.',
+                                        permissionDenied: 'Permission denied. Please refresh and give camera permission.',
+                                        switchCamera: 'It is not possible to switch camera to different one because there is only one video device accessible.',
+                                        canvas: 'Canvas is not supported.'
 
-                    {isCameraOn && <Button onClick={handleTakePhoto} className='bg-gray-900 my-1'>Take Photo</Button>}
-                    {numberOfCameras > 1 && isCameraOn && (
-                        <Button className='bg-gray-700 my-1' onClick={() => camera.current?.switchCamera()}>Switch Camera</Button>
-                    )}
-                    {image && <Button onClick={generateContent} className='bg-gray-500 my-1' >Add to pantry</Button>}
-                </div>
-                {image && <img src={image} alt='Taken photo' className='w-80' />}
-            </div>
+                                    }}
+                                />
+                            </div>
+                        </DrawerHeader>
+                        <DrawerFooter>
+                            {isLoading ?
+                                (<>
+                                    <Button disabled>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Scanning
+                                    </Button>
+                                </>
+                                ) : (
+                                    <>
+                                        <Button onClick={handleTakePhoto}>Take Photo</Button>
+                                    </>
+                                )}
+
+                            <DrawerClose asChild>
+                                <Button variant="outline" ref={drawerCloseRef}>Cancel</Button>
+                            </DrawerClose>
+                        </DrawerFooter>
+                    </div>
+                </DrawerContent>
+            </Drawer>
+
         </>
     )
 }

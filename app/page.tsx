@@ -30,7 +30,7 @@ export default function Landing() {
 
   // Check first if user is signed in
   if (user) {
-    return router.push("/home");
+    router.push("/home");
   }
 
   // Handle login
@@ -49,7 +49,7 @@ export default function Landing() {
 
   return (
     <>
-      <main className="h-screen flex flex-col justify-center items-center">
+      <main className="min-h-screen flex flex-col justify-center items-center">
         {/* Icon and PantryText */}
         <div className="flex justify-center items-center">
           <Image
@@ -60,8 +60,8 @@ export default function Landing() {
             className="mr-5"
           />
           <div className="flex flex-col">
-            <h1 className="text-6xl">PantryTracker</h1>
-            <div className='text-gray-600 font-medium text-lg pl-1 pt-1'>Your AI-Assistant Pantry Mangagement UI</div>
+            <h1 className="text-6xl">PantryAI</h1>
+            <div className='text-gray-600 font-medium text-lg pl-1 pt-1'>Your AI-Assistant Pantry UI</div>
 
           </div>
 

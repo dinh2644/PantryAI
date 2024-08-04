@@ -17,12 +17,11 @@ import PantryItems from '@/components/PantryItems';
 import { PantryItem } from '../supabase/actions';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
-import Recipe from '@/components/Recipe'
 import { supabase } from '../../app/client';
-import Webcam from '@/components/Webcam';
-
+import { usePantry } from '../PantryContext';
 
 const HomePage = () => {
+    const { fetchPantry } = usePantry()
     const router = useRouter();
     const [user, loading] = useAuthState(auth);
     const [item, setItem] = useState<PantryItem>({
@@ -30,7 +29,6 @@ const HomePage = () => {
         quantity: 0,
         unit: "",
     })
-    const [pantry, setPantry] = useState<PantryItem[]>([])
 
     if (loading) {
         return <Loading />
@@ -53,23 +51,6 @@ const HomePage = () => {
             unit: value
         }))
     }
-
-    // Handle fetch pantry items
-    // fetch pantry items
-    const fetchPantry = async () => {
-        const { data } = await supabase
-            .from("pantry")
-            .select()
-            .order("quantity", { ascending: false });
-
-        if (data) {
-            setPantry(data as PantryItem[]);
-        } else {
-            setPantry([]);
-        }
-
-    }
-
     // Handle create pantry item
     const handleCreate = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -94,70 +75,53 @@ const HomePage = () => {
         }
     }
 
-
     return (
         <>
-            <div className="flex mx-10 my-5">
-                {/* Left side */}
-                <div className="w-1/2 h-12">
-                    {/* Inputs */}
-                    <div className="overflow-y-auto flex-grow max-h-[calc(100vh-450px)] bg-white rounded-lg w-full px-48 py-2 boxContainer">
+            <div className="flex flex-col md:flex-row justify-center items-center min-h-screen gap-10">
 
-                        {/* Name */}
-                        <div className="grid w-full max-w-sm items-center gap-1.5">
-                            <Label htmlFor="name" className='font-semibold text-lg'>Name</Label>
-                            <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
-                        </div>
-                        {/* Quantity */}
-                        <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label htmlFor="quantity" className='font-semibold text-lg'>Quantity</Label>
-                            <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
-                            <div className="text-gray-600 text-sm pl-1 ">
-                                Whole number only
-                            </div>
-                        </div>
-                        {/* Unit dropdown */}
-                        <div className="grid w-full max-w-sm items-center gap-1.5 py-2">
-                            <Label className='font-semibold text-lg'>Unit</Label>
-                            <Select value={item.unit} onValueChange={handleUnitChange}>
-                                <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Select unit" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="piece">pc</SelectItem>
-                                    <SelectItem value="gram">g</SelectItem>
-                                    <SelectItem value="milliliter">ml</SelectItem>
-                                    <SelectItem value="teaspoon">tsp</SelectItem>
-                                    <SelectItem value="tablespoon">tbsp</SelectItem>
-                                    <SelectItem value="cup">cup</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                {/* Inputs */}
+                <div className="shadow-xl w-4/12 flex flex-col justify-center items-center rounded-3xl">
 
-                        {/* Add item button */}
-                        <div className='py-2 flex '>
-                            <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
-                            <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
-
+                    {/* Form input */}
+                    <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pt-10">
+                        <Label htmlFor="name" className='font-semibold text-2xl'>Name</Label>
+                        <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
+                    </div>
+                    <div className="grid w-full max-w-sm items-center gap-2.5 py-2">
+                        <Label htmlFor="quantity" className='font-semibold text-2xl'>Quantity</Label>
+                        <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
+                        <div className="text-gray-600 text-sm pl-1 ">
+                            Whole number only
                         </div>
                     </div>
+                    <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pb-5">
+                        <Label className='font-semibold text-2xl'>Unit</Label>
+                        <Select value={item.unit} onValueChange={handleUnitChange}>
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="piece">pc</SelectItem>
+                                <SelectItem value="gram">g</SelectItem>
+                                <SelectItem value="milliliter">ml</SelectItem>
+                                <SelectItem value="teaspoon">tsp</SelectItem>
+                                <SelectItem value="tablespoon">tbsp</SelectItem>
+                                <SelectItem value="cup">cup</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className='py-2 flex pb-10'>
+                        <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
+                        <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
 
-
-                    {/* Pantry items */}
-                    <PantryItems pantry={pantry} fetchPantry={fetchPantry} />
+                    </div>
                 </div>
 
-                {/* Right side */}
-                <div className="w-1/2 h-12">
-                    {/* Camera */}
-                    <Webcam />
 
-                    <Recipe pantry={pantry} />
-
-                </div>
+                {/* Pantry items */}
+                <PantryItems />
 
             </div>
-
 
         </>
     )

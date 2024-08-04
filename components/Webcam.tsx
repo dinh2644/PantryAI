@@ -176,7 +176,6 @@ const Webcam = () => {
                             {/* Camera content */}
                             <div className="p-4 pb-0">
                                 {isCameraOn && <Camera
-
                                     ref={camera}
                                     aspectRatio={4 / 3}
                                     facingMode="user"

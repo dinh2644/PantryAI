@@ -6,7 +6,7 @@
 // // Firestore CRUD operations
 
 import React from 'react'
-import DogIcon from "../public/dog.png"
+import PantryIcon from "../public/pantry.png"
 import { auth } from "../firebase"
 import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
 import { Button } from "@/components/ui/button"
@@ -53,7 +53,7 @@ export default function Landing() {
         {/* Icon and PantryText */}
         <div className="flex justify-center items-center">
           <Image
-            src={DogIcon}
+            src={PantryIcon}
             width={150}
             height={150}
             alt="Picture of cartoon shiba inu"
@@ -68,7 +68,7 @@ export default function Landing() {
         </div>
         <div className="flex flex-col justify-center items-center">
           {/* Google sign in button */}
-          <Button className="bg-[#FACC15] rounded-full w-60 p-7 my-5 mt-12"
+          <Button className="bg-black rounded-lg w-60 p-7 my-5 mt-12"
             onClick={handleLogin}
           >
             <Image
@@ -78,10 +78,10 @@ export default function Landing() {
               alt="Picture of cartoon shiba inu"
               className="mr-2"
             />
-            <span className="text-black font-semibold text-lg">Sign in with Google</span>
+            <span className="text-white font-semibold text-lg">Sign in with Google</span>
           </Button>
           {/* Waitlist */}
-          <Button className="bg-[#FEF08A] rounded-full w-52 p-7">
+          <Button className="bg-gray-300 rounded-lg w-52 p-7 hover:bg-gray-200">
             <span className="text-black font-semibold text-lg">Join waitlist</span>
           </Button>
 

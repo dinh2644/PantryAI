@@ -1,5 +1,5 @@
 'use client'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { auth } from "../../firebase"
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/navigation';
@@ -19,6 +19,8 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import { supabase } from '../../app/client';
 import { usePantry } from '../PantryContext';
+import Navbar from "@/components/Navbar";
+
 
 const HomePage = () => {
     const { fetchPantry } = usePantry()
@@ -77,25 +79,26 @@ const HomePage = () => {
 
     return (
         <>
-            <div className="flex flex-col md:flex-row justify-center items-center min-h-screen gap-10">
+            <Navbar />
+            <div className="pt-16 sm:pt-0 flex flex-col sm:flex-row justify-center items-center min-h-screen gap-10">
 
                 {/* Inputs */}
-                <div className="shadow-xl w-4/12 flex flex-col justify-center items-center rounded-3xl">
+                <div className="shadow-xl w-auto sm:w-4/12 flex flex-col justify-center items-center rounded-3xl px-4">
 
                     {/* Form input */}
                     <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pt-10">
-                        <Label htmlFor="name" className='font-semibold text-2xl'>Name</Label>
+                        <Label htmlFor="name" className='font-semibold text-lg sm:text-2xl'>Name</Label>
                         <Input type="text" id="name" placeholder="Enter name" name="name" onChange={handleChange} value={item.name} />
                     </div>
                     <div className="grid w-full max-w-sm items-center gap-2.5 py-2">
-                        <Label htmlFor="quantity" className='font-semibold text-2xl'>Quantity</Label>
+                        <Label htmlFor="quantity" className='font-semibold text-lg sm:text-2xl'>Quantity</Label>
                         <Input type="number" id="quantity" placeholder="Enter quantity" name="quantity" onChange={handleChange} value={item.quantity} />
-                        <div className="text-gray-600 text-sm pl-1 ">
+                        <div className="text-gray-600 text-xs sm:text-sm pl-1 ">
                             Whole number only
                         </div>
                     </div>
                     <div className="grid w-full max-w-sm items-center gap-2.5 py-2 pb-5">
-                        <Label className='font-semibold text-2xl'>Unit</Label>
+                        <Label className='font-semibold text-lg sm:text-2xl'>Unit</Label>
                         <Select value={item.unit} onValueChange={handleUnitChange}>
                             <SelectTrigger className="w-[180px]">
                                 <SelectValue placeholder="Select unit" />
@@ -111,8 +114,8 @@ const HomePage = () => {
                         </Select>
                     </div>
                     <div className='py-2 flex pb-10'>
-                        <Button onClick={handleCreate} className='mr-2 bg-black'>Add to Pantry</Button>
-                        <Button className='mr-2' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
+                        <Button onClick={handleCreate} className='mr-2 bg-black text-xs sm:text-sm'>Add to Pantry</Button>
+                        <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
 
                     </div>
                 </div>

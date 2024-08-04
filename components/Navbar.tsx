@@ -35,11 +35,11 @@ const Navbar = () => {
                     className={`flex justify-self-center pb-3 mt-8 md:block md:pb-0 md:mt-0 ${state ? "block" : "hidden"
                         }`}
                 >
-                    <ul className="justify-center items-center space-y-8 md:flex md:space-x-6 md:space-y-0">
+                    <ul className="justify-center items-start md:items-center space-y-8 flex flex-col md:flex-row md:space-x-6 md:space-y-0">
 
-                        <Link href="/recipe" className="text-gray-600 hover:text-indigo-600">Generate Recipe</Link>
+                        <Link href="/recipe" className=" text-gray-600 hover:scale-105 transform transition duration-y font-medium">Generate Recipe</Link>
                         <Webcam />
-                        <button className="text-gray-600 hover:text-indigo-600" onClick={() => auth.signOut()}>Logout</button>
+                        <button className=" text-red-600 hover:scale-105 transform transition duration-y font-medium" onClick={() => auth.signOut()}>Logout</button>
 
                     </ul>
                 </div>

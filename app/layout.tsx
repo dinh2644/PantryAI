@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Varela } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
-import Navbar from "@/components/Navbar";
 import { PantryProvider } from './PantryContext';
 
 
@@ -18,13 +17,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
   return (
     <html lang="en" data-theme="cupcake">
 
       <body className={varela.className}><Toaster position="bottom-center" />
 
         <PantryProvider>
-          <Navbar />
           {children}
         </PantryProvider>
 

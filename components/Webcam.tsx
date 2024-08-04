@@ -36,15 +36,16 @@ const Webcam = () => {
     })
     // console.log('item: ', item)
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [isCameraOn, setIsCameraOn] = useState<boolean>(false)
 
     const handleTakePhoto = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
+        setIsCameraOn(true)
         handleCaptureAndGenerate();
     };
 
     const handleCaptureAndGenerate = async () => {
         if (camera.current) {
-            setIsLoading(true);
             try {
                 const photo = camera.current.takePhoto();
                 if (typeof photo === 'string') {
@@ -158,22 +159,23 @@ const Webcam = () => {
 
     const closeDrawer = () => {
         drawerCloseRef.current?.click();
+        setIsCameraOn(false)
     };
 
     return (
         <>
             <Drawer>
                 <DrawerTrigger asChild>
-                    <Button variant="outline">Add with CameraAI</Button>
+                    <Button variant="outline" className="font-medium" onClick={() => setIsCameraOn(true)}>Add with CameraAI</Button>
                 </DrawerTrigger>
                 <DrawerContent>
                     <div className="mx-auto w-full max-w-sm">
                         <DrawerHeader className="mt-2">
                             <DrawerTitle className="text-center">CameraAI</DrawerTitle>
-                            <DrawerDescription className="text-center">Scan your pantry item</DrawerDescription>
+                            <DrawerDescription className="text-center">Scan your item</DrawerDescription>
                             {/* Camera content */}
                             <div className="p-4 pb-0">
-                                <Camera
+                                {isCameraOn && <Camera
 
                                     ref={camera}
                                     aspectRatio={4 / 3}
@@ -185,7 +187,8 @@ const Webcam = () => {
                                         canvas: 'Canvas is not supported.'
 
                                     }}
-                                />
+                                />}
+
                             </div>
                         </DrawerHeader>
                         <DrawerFooter>
@@ -203,7 +206,7 @@ const Webcam = () => {
                                 )}
 
                             <DrawerClose asChild>
-                                <Button variant="outline" ref={drawerCloseRef}>Cancel</Button>
+                                <Button variant="outline" ref={drawerCloseRef} onClick={() => setIsCameraOn(false)}>Cancel</Button>
                             </DrawerClose>
                         </DrawerFooter>
                     </div>

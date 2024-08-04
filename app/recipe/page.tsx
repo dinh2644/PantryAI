@@ -6,6 +6,8 @@ import { PantryItem } from '@/app/supabase/actions';
 import { Loader2 } from "lucide-react"
 import jsPDF from "jspdf"
 import { supabase } from '../../app/client';
+import Navbar from "@/components/Navbar";
+
 
 type Ingredient = string;
 type Instruction = string;
@@ -192,94 +194,98 @@ const Recipe = () => {
     }
 
     return (
-        <div className=" p-6 bg-white rounded-lg w-full boxContainer px-32 min-h-screen flex flex-col justify-center items-center">
-            {loading ? <Button disabled className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Please wait
-            </Button> : (
-                <>
-                    {pantry && pantry.length > 2 ? (<Button
-                        className={`bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300 ${recipe && 'hidden'}`}
-                        onClick={handleSendMessage}
-                    >
-                        Generate Recipe
-                    </Button>) : (
-                        <Button
-                            className={`bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300 ${recipe && 'hidden'}`}
+        <>
+            <Navbar />
+            <div className="py-20 px-10 sm:py-32 sm:px-16 md:p-28 lg:p-24 xl:p-40 bg-white rounded-lg w-full boxContainer min-h-screen flex flex-col justify-center items-center">
+                {loading ? <Button disabled className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                </Button> : (
+                    <>
+                        {pantry && pantry.length > 2 ? (<Button
+                            className={`bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300 ${recipe && 'hidden'} hover:scale-105 transform transition duration-y`}
                             onClick={handleSendMessage}
-                            title="Must have food in pantry"
-                            disabled
                         >
                             Generate Recipe
-                        </Button>
-                    )}
+                        </Button>) : (
+                            <Button
+                                className={`bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition duration-300 ${recipe && 'hidden'}`}
+                                onClick={handleSendMessage}
+                                title="Must have food in pantry"
+                                disabled
+                            >
+                                Generate Recipe
+                            </Button>
+                        )}
 
-                </>
-            )}
+                    </>
+                )}
 
 
-            <div className="flex justify-between items-center">
-                <div className="flex flex-col mt-1">
-                    <div className={`text-gray-600 mt-2 text-center ${recipe && 'hidden'}`}>
-                        For best result, make sure your pantry has 3 or more appropiate items
+                <div className="flex justify-between items-center">
+                    <div className="flex flex-col mt-1">
+                        <div className={`text-gray-600 mt-2 text-center ${recipe && 'hidden'}`}>
+                            For best result, make sure your pantry has 3 or more appropiate items
+                        </div>
                     </div>
+
+                    {recipe &&
+                        <div>
+                            <Button className='bg-black mr-2' onClick={downloadPDF}>
+                                Export PDF
+                            </Button>
+                            <Button variant="destructive" onClick={() => setRecipe(null)}>
+                                Clear
+                            </Button>
+                        </div>}
+
+
+
                 </div>
 
-                {recipe &&
-                    <div>
-                        <Button className='bg-black mr-2' onClick={downloadPDF}>
-                            Export PDF
-                        </Button>
-                        <Button variant="destructive" onClick={() => setRecipe(null)}>
-                            Clear
-                        </Button>
-                    </div>}
 
+                {recipe && (
+                    <div className="p-6 bg-gray-100 rounded-xl mt-4 shadow-md max-h-[80vh] overflow-y-auto">
+                        <h2 className="text-2xl font-bold mb-4 text-gray-800">{recipe.title}</h2>
 
+                        <div className="grid grid-cols-2 gap-6">
+                            {/* Ingredients column */}
+                            <div>
+                                <h3 className="text-xl font-semibold mb-2 text-gray-700">Ingredients:</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-600">
+                                    {recipe.ingredients?.map((ingredient, index) => (
+                                        <li key={index}>{ingredient}</li>
+                                    ))}
+                                </ul>
+                            </div>
 
+                            {/* Instructions column */}
+                            <div>
+                                <h3 className="text-xl font-semibold mb-2 text-gray-700">Instructions:</h3>
+                                <ol className="list-decimal list-inside space-y-2 text-gray-600">
+                                    {recipe.instructions?.map((step, index) => (
+                                        <li key={index} className="mb-2">{step}</li>
+                                    ))}
+                                </ol>
+                            </div>
+                        </div>
+
+                        {/* Tips row */}
+                        {recipe.tips && recipe.tips.length > 0 && (
+                            <div className="mt-6">
+                                <h3 className="text-xl font-semibold mb-2 text-gray-700">Tips:</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-600">
+                                    {recipe.tips.map((tip, index) => (
+                                        <li key={index}>{tip}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
+        </>
 
-
-            {recipe && (
-                <div className="p-6 bg-gray-100 rounded-lg mt-4 shadow-md max-h-[80vh] overflow-y-auto">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800">{recipe.title}</h2>
-
-                    <div className="grid grid-cols-2 gap-6">
-                        {/* Ingredients column */}
-                        <div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-700">Ingredients:</h3>
-                            <ul className="list-disc list-inside space-y-1 text-gray-600">
-                                {recipe.ingredients?.map((ingredient, index) => (
-                                    <li key={index}>{ingredient}</li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        {/* Instructions column */}
-                        <div>
-                            <h3 className="text-xl font-semibold mb-2 text-gray-700">Instructions:</h3>
-                            <ol className="list-decimal list-inside space-y-2 text-gray-600">
-                                {recipe.instructions?.map((step, index) => (
-                                    <li key={index} className="mb-2">{step}</li>
-                                ))}
-                            </ol>
-                        </div>
-                    </div>
-
-                    {/* Tips row */}
-                    {recipe.tips && recipe.tips.length > 0 && (
-                        <div className="mt-6">
-                            <h3 className="text-xl font-semibold mb-2 text-gray-700">Tips:</h3>
-                            <ul className="list-disc list-inside space-y-1 text-gray-600">
-                                {recipe.tips.map((tip, index) => (
-                                    <li key={index}>{tip}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
     );
 };
 

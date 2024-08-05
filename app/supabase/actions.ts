@@ -3,7 +3,7 @@ import { supabaseServer } from "@/lib/supabase/server"
 import { unstable_noStore as noStore } from "next/cache"
 
 export interface PantryItem {
-    id: number
+    id?: number
     name: string,
     quantity: number,
     unit: string

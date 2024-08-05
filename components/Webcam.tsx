@@ -10,17 +10,16 @@ import {
     DrawerTitle,
     DrawerTrigger,
 } from "@/components/ui/drawer"
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useTransition } from 'react'
 import { Camera } from "react-camera-pro";
 import { Button } from '@/components//ui/button';
 import { GenerateContentResult, GoogleGenerativeAI } from '@google/generative-ai';
 import { Buffer } from 'buffer';
-import { PantryItem } from '../app/supabase/actions'
+import { PantryItem, createItem } from '../app/supabase/actions'
 import { supabase } from '../app/client';
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { usePantry } from '@/app/supabase/PantryContext';
-
 
 const Webcam = () => {
     const { fetchPantry } = usePantry();
@@ -28,6 +27,7 @@ const Webcam = () => {
     const drawerCloseRef = useRef<HTMLButtonElement>(null);
     const camera = useRef<any>(null);
     const [item, setItem] = useState<PantryItem>({
+        id: 0,
         name: "",
         quantity: 0,
         unit: "",
@@ -43,6 +43,7 @@ const Webcam = () => {
     };
 
     const handleCaptureAndGenerate = async () => {
+        setIsLoading(true)
         if (camera.current) {
             try {
                 const photo = camera.current.takePhoto();
@@ -65,7 +66,6 @@ const Webcam = () => {
     useEffect(() => {
         if (item.name && item.quantity && item.unit) {
             handleCreate();
-
         }
     }, [item]);
 
@@ -129,31 +129,30 @@ const Webcam = () => {
         }
     };
 
-    // Handle create pantry item
+    // Handle create item
     const handleCreate = async () => {
         if (item.name === '' || item.quantity === 0 || item.unit === '') {
-            console.log("INPUTS CANT BE EMPTY: ", item)
-            toast.error("Inputs cannot be empty")
-            setIsLoading(false)
+            toast.error("Inputs cannot be empty");
             return;
         }
-        const { error } = await supabase.from("pantry").insert(item);
-
-        if (error) {
-            console.log(error);
-            toast.error("Can't create item")
-        } else {
+        try {
+            await createItem(item);
+            fetchPantry();
             setItem({
                 name: "",
                 quantity: 0,
                 unit: ""
             });
-
-            fetchPantry();
-            toast.success("Item added successfully");
+            toast.success("Item created successfully");
             closeDrawer();
+        } catch (error) {
+            console.error('Error creating item:', error);
+            toast.error("Can't create item");
         }
-    }
+
+    };
+
+
 
     const closeDrawer = () => {
         drawerCloseRef.current?.click();

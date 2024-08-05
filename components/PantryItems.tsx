@@ -30,7 +30,6 @@ const PantryItems = () => {
 
     const [newValue, setNewValue] = useState<PantryItem>(
         {
-            id: 0,
             name: '',
             quantity: 0,
             unit: ''
@@ -65,7 +64,6 @@ const PantryItems = () => {
             await updateItem(id, newValue);
             fetchPantry();
             setNewValue({
-                id: 0,
                 name: '',
                 quantity: 0,
                 unit: ''
@@ -131,10 +129,10 @@ const PantryItems = () => {
                                         {/* Right side */}
                                         <div className='flex items-center'>
                                             <div className="text-black text-center sm:text-right text-sm sm:text-md leading-5 pr-4">Unit: {item.unit === 'piece' && 'pc' || item.unit === 'gram' && 'g' || item.unit === 'milliliter' && 'ml' || item.unit === 'teaspoon' && 'tsp' || item.unit === 'tablespoon' && 'tbsp' || item.unit === 'cup' && 'cup'}</div>
-                                            <Button variant="destructive" onClick={(e) => handleDelete(item.id, e)} className='mr-2'>Delete</Button>
+                                            <Button variant="destructive" onClick={(e) => handleDelete(item.id!, e)} className='mr-2'>Delete</Button>
                                             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                                                 <DialogTrigger asChild>
-                                                    <Button variant="outline" onClick={(e) => handleDialog(e, item.id)}>Edit</Button>
+                                                    <Button variant="outline" onClick={(e) => handleDialog(e, item.id!)}>Edit</Button>
                                                 </DialogTrigger>
                                                 <DialogContent className="sm:max-w-[425px]">
                                                     <DialogHeader>

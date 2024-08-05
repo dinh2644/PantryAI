@@ -1,12 +1,11 @@
 'use client'
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
-import { PantryItem } from '@/app/supabase/actions';
 import { Loader2 } from "lucide-react"
 import jsPDF from "jspdf"
-import { supabase } from '../../app/client';
 import Navbar from "@/components/Navbar";
+import { usePantry } from '../supabase/PantryContext';
 
 
 type Ingredient = string;
@@ -23,16 +22,12 @@ interface Recipe {
     timestamp: Date;
 }
 
-type SetRecipeAction = React.Dispatch<React.SetStateAction<Recipe | null>>;
-
 
 const Recipe = () => {
-    const [pantry, setPantry] = useState<PantryItem[]>([])
-
     const [chatSession, setChatSession] = useState<any>(null);
     // const [userInput, setUserInput] = useState<PantryItem[]>(pantry)
     const [recipe, setRecipe] = useState<Recipe | null>(null);
-
+    const { pantry } = usePantry();
     const [loading, setLoading] = useState<boolean>(false)
 
     const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY
@@ -65,22 +60,6 @@ const Recipe = () => {
             threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE
         }
     ];
-
-    useEffect(() => {
-        const fetchPantry = async () => {
-            const { data } = await supabase
-                .from("pantry")
-                .select()
-                .order("quantity", { ascending: false });
-
-            if (data) {
-                setPantry(data as PantryItem[]);
-            } else {
-                setPantry([]);
-            }
-        }
-        fetchPantry()
-    }, [])
 
 
     useEffect(() => {
@@ -126,31 +105,37 @@ const Recipe = () => {
         setLoading(true);
         try {
             if (chatSession) {
-                const pantryString = pantry.map(item =>
-                    `${item.name}: ${item.quantity} ${item.unit}`
-                ).join(', ');
+                if (pantry.length > 0) {
+                    const pantryString = pantry.map(item =>
+                        `${item.name}: ${item.quantity} ${item.unit}`
+                    ).join(', ');
+                    const prompt = `Given these pantry items: ${pantryString}, please generate an original, creative recipe. Do not reproduce any existing recipes. The recipe should be unique and based on combining the given ingredients in a novel way. Format the response as follows:
+                                    Title: [Recipe Title]
+                                    Ingredients:
+                                    - [Ingredient 1]
+                                    - [Ingredient 2]
+                                    ...
+                                    Instructions:
+                                    1. [Step 1]
+                                    2. [Step 2]
+                                    ...
+                                    Tips (optional):
+                                    - [Tip 1]
+                                    - [Tip 2]
+                                    ...`;
+                    if (prompt.trim() !== '') {
+                        const result = await chatSession.sendMessage(prompt);
+                        const responseText = result.response.text();
+                        const parsedRecipe = parseRecipe(responseText);
+                        setRecipe(parsedRecipe);
+                    } else {
+                        console.error("Prompt is empty");
+                    }
 
-                const prompt = `Given these pantry items: ${pantryString}, please generate a recipe. Format the response as follows:
-              Title: [Recipe Title]
-              Ingredients:
-              - [Ingredient 1]
-              - [Ingredient 2]
-              ...
-              Instructions:
-              1. [Step 1]
-              2. [Step 2]
-              ...
-              Tips (optional):
-              - [Tip 1]
-              - [Tip 2]
-              ...`;
+                } else {
+                    console.error("Pantry is empty");
 
-                const result = await chatSession.sendMessage(prompt);
-                const responseText = result.response.text();
-
-                const parsedRecipe = parseRecipe(responseText);
-
-                setRecipe(parsedRecipe);
+                }
             }
         } catch (error) {
             console.error(error);
@@ -192,6 +177,7 @@ const Recipe = () => {
             doc.save("recipe.pdf");
         }
     }
+    console.log(pantry.length);
 
     return (
         <>

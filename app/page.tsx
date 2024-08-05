@@ -19,7 +19,6 @@ import { usePantry } from './supabase/PantryContext'
 
 const HomePage = () => {
   const [item, setItem] = useState<PantryItem>({
-    id: 0,
     name: "",
     quantity: 0,
     unit: "",
@@ -42,12 +41,11 @@ const HomePage = () => {
         await createItem(item);
         fetchPantry();
         setItem({
-          id: 0,
           name: "",
           quantity: 0,
           unit: ""
         });
-        toast.success("Item created successfully");
+        toast.success("Item added successfully");
       } catch (error) {
         console.error('Error creating item:', error);
         toast.error("Can't create item");
@@ -112,7 +110,7 @@ const HomePage = () => {
             <form onSubmit={handleCreate}>
               <Button className='mr-2 bg-black text-xs sm:text-sm' type='submit' disabled={isPending}>{isPending ? 'Adding...' : 'Add to Pantry'}</Button>
             </form>
-            <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ id: 0, name: '', quantity: 0, unit: '' })}>Clear</Button>
+            <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
 
 
 

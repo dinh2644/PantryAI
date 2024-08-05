@@ -14,19 +14,23 @@ import { createItem, PantryItem } from './supabase/actions';
 import { Button } from '@/components/ui/button';
 import { toast } from 'react-hot-toast';
 import Navbar from "@/components/Navbar";
+import { usePantry } from './supabase/PantryContext'
 
 
 const HomePage = () => {
   const [item, setItem] = useState<PantryItem>({
+    id: 0,
     name: "",
     quantity: 0,
     unit: "",
   })
   const [isPending, startTransition] = useTransition()
+  const { fetchPantry } = usePantry()
 
 
   // Handle create item
-  const handleCreate = async () => {
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
     startTransition(async () => {
       if (item.name === '' || item.quantity === 0 || item.unit === '') {
@@ -36,7 +40,9 @@ const HomePage = () => {
 
       try {
         await createItem(item);
+        fetchPantry();
         setItem({
+          id: 0,
           name: "",
           quantity: 0,
           unit: ""
@@ -106,7 +112,7 @@ const HomePage = () => {
             <form onSubmit={handleCreate}>
               <Button className='mr-2 bg-black text-xs sm:text-sm' type='submit' disabled={isPending}>{isPending ? 'Adding...' : 'Add to Pantry'}</Button>
             </form>
-            <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ name: '', quantity: 0, unit: '' })}>Clear</Button>
+            <Button className='mr-2 text-xs sm:text-sm' variant="outline" onClick={() => setItem({ id: 0, name: '', quantity: 0, unit: '' })}>Clear</Button>
 
 
 

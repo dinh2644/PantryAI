@@ -1,9 +1,9 @@
 "use server"
 import { supabaseServer } from "@/lib/supabase/server"
-import { revalidatePath, unstable_noStore as noStore } from "next/cache"
+import { unstable_noStore as noStore } from "next/cache"
 
 export interface PantryItem {
-    id?: number
+    id: number
     name: string,
     quantity: number,
     unit: string
@@ -28,7 +28,6 @@ export async function createItem(item: PantryItem) {
         throw error
     }
 
-    revalidatePath("/")
     return data
 
 }
@@ -42,22 +41,17 @@ export async function getPantry() {
     return await supabase.from("pantry").select("*")
 
 }
+
 // UPDATE
-export async function updateItem(id: Number, item: PantryItem) {
+export async function updateItem(id: number, item: PantryItem) {
     const supabase = await supabaseServer();
 
-    const { error } = await supabase.from("pantry").update({
+
+    await supabase.from("pantry").update({
         name: item.name,
         quantity: item.quantity,
         unit: item.unit
     }).eq("id", id)
-
-    if (error) {
-        console.error('Error updating item:', error)
-        throw error
-    }
-
-    revalidatePath("/")
 
 }
 
@@ -65,14 +59,7 @@ export async function updateItem(id: Number, item: PantryItem) {
 export async function deleteItem(id: number) {
     const supabase = await supabaseServer();
 
-    const { error } = await supabase.from("pantry").delete().eq("id", id)
+    await supabase.from("pantry").delete().eq("id", id)
 
-    if (error) {
-        console.error('Error deleting item:', error)
-        throw error
-    }
-
-    revalidatePath("/")
 
 }
-

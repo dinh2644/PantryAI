@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+
 import { useQuery } from '@tanstack/react-query'
 import { supabaseClient } from '@/lib/supabase/client'
 
@@ -25,7 +25,7 @@ const useUser = () => {
                     .select("*")
                     .eq("id", data.session.user.id)
                     .single();
-                console.log(user);
+
 
                 return user
             }

@@ -26,21 +26,26 @@ import { usePantry } from '@/app/supabase/PantryContext';
 import PantryLoading from './PantryLoading';
 
 const PantryItems = () => {
-    const { pantry, isLoading } = usePantry();
+    const { pantry, isLoading, fetchPantry } = usePantry();
 
     const [newValue, setNewValue] = useState<PantryItem>(
         {
+            id: 0,
             name: '',
             quantity: 0,
             unit: ''
         }
     );
     const [dialogOpen, setDialogOpen] = useState<boolean>(false);
+    const [editingItemID, setEditingItemID] = useState<number>(0)
 
     // Handle delete item
-    const handleDelete = async (id: number) => {
+    const handleDelete = async (id: number, e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+
         try {
-            await deleteItem(id)
+            await deleteItem(id);
+            fetchPantry();
             toast.success("Item deleted successfully");
         } catch (error) {
             console.log(error);
@@ -49,22 +54,25 @@ const PantryItems = () => {
     }
 
     // Handle update
-    const handleEdit = async (id: number) => {
+    const handleEdit = async (id: number, e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
         try {
             // validation
             if (newValue.name.trim() === "" || newValue.quantity === 0 || newValue.unit.trim() === "") {
                 toast.error("Required fields cannot be empty!")
                 return
             }
-
             await updateItem(id, newValue);
+            fetchPantry();
             setNewValue({
+                id: 0,
                 name: '',
                 quantity: 0,
                 unit: ''
             });
             setDialogOpen(false);
             toast.success("Item updated successfully");
+
         } catch (error) {
             console.log(error);
             toast.error("Can't update item");
@@ -86,6 +94,17 @@ const PantryItems = () => {
             unit: value
         }))
     }
+
+    // Handle dialog open and editing item's id
+    const handleDialog = (e: React.MouseEvent<HTMLButtonElement>, id: number) => {
+        e.preventDefault();
+        setDialogOpen(true);
+        setEditingItemID(id);
+        console.log(id);
+    }
+
+
+
 
 
     return (
@@ -112,10 +131,10 @@ const PantryItems = () => {
                                         {/* Right side */}
                                         <div className='flex items-center'>
                                             <div className="text-black text-center sm:text-right text-sm sm:text-md leading-5 pr-4">Unit: {item.unit === 'piece' && 'pc' || item.unit === 'gram' && 'g' || item.unit === 'milliliter' && 'ml' || item.unit === 'teaspoon' && 'tsp' || item.unit === 'tablespoon' && 'tbsp' || item.unit === 'cup' && 'cup'}</div>
-                                            <Button variant="destructive" onClick={() => handleDelete(item.id!)} className='mr-2'>Delete</Button>
+                                            <Button variant="destructive" onClick={(e) => handleDelete(item.id, e)} className='mr-2'>Delete</Button>
                                             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                                                 <DialogTrigger asChild>
-                                                    <Button variant="outline" onClick={() => setDialogOpen(true)}>Edit</Button>
+                                                    <Button variant="outline" onClick={(e) => handleDialog(e, item.id)}>Edit</Button>
                                                 </DialogTrigger>
                                                 <DialogContent className="sm:max-w-[425px]">
                                                     <DialogHeader>
@@ -170,7 +189,7 @@ const PantryItems = () => {
                                                         </div>
                                                     </div>
                                                     <DialogFooter>
-                                                        <Button type="submit" onClick={() => handleEdit(item.id!)}>Save changes</Button>
+                                                        <Button type="submit" onClick={(e) => { handleEdit(editingItemID, e); console.log('CP 2: ', editingItemID) }}>Save changes</Button>
                                                     </DialogFooter>
                                                 </DialogContent>
                                             </Dialog>

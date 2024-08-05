@@ -1,5 +1,7 @@
 Track your pantry with PantryAI, featuring AI image dectection and recipe generation for your taste.
 
+Get started: https://pantry-ai-sandy.vercel.app/auth
+
 ## Getting Started
 
 First, run the development server:

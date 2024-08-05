@@ -90,13 +90,22 @@ const Recipe = () => {
         if (titleMatch) recipe.title = titleMatch[1].trim().replace(/\*\*/g, '');
 
         const ingredientsMatch = text.match(/Ingredients:([\s\S]*?)(?=Instructions:|$)/);
-        if (ingredientsMatch) recipe.ingredients = ingredientsMatch[1].split('\n').filter(i => i.trim()).map(i => i.trim().replace(/^-\s*/, ''));
+        if (ingredientsMatch) recipe.ingredients = ingredientsMatch[1]
+            .split('\n')
+            .filter(i => i.trim() && !i.trim().match(/^[•\-\*]\s*\**\s*$/))
+            .map(i => i.trim().replace(/^[•\-\*]\s*\**\s*/, '').replace(/\*\*/g, ''));
 
         const instructionsMatch = text.match(/Instructions:([\s\S]*?)(?=Tips:|$)/);
-        if (instructionsMatch) recipe.instructions = instructionsMatch[1].split('\n').filter(i => i.trim()).map(i => i.trim().replace(/^\d+\.\s*/, ''));
+        if (instructionsMatch) recipe.instructions = instructionsMatch[1]
+            .split('\n')
+            .filter(i => i.trim() && !i.trim().match(/^(\d+\.|\*\*)\s*$/))
+            .map(i => i.trim().replace(/^(\d+\.|\*\*)\s*/, '').replace(/\*\*/g, ''));
 
         const tipsMatch = text.match(/Tips:([\s\S]*?)$/);
-        if (tipsMatch) recipe.tips = tipsMatch[1].split('\n').filter(i => i.trim()).map(i => i.trim().replace(/^-\s*/, ''));
+        if (tipsMatch) recipe.tips = tipsMatch[1]
+            .split('\n')
+            .filter(i => i.trim() && !i.trim().match(/^[•\-\*]\s*\**\s*$/))
+            .map(i => i.trim().replace(/^[•\-\*]\s*\**\s*/, '').replace(/\*\*/g, ''));
 
         return recipe;
     };

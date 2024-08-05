@@ -38,7 +38,7 @@ export async function getPantry() {
     const supabase = await supabaseServer();
 
     // Policies that are set up automatically grab the user's own pantry items without needing to specify id
-    return await supabase.from("pantry").select("*")
+    return await supabase.from("pantry").select("*").order("quantity", { ascending: false });
 
 }
 

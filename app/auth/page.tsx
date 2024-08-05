@@ -50,9 +50,9 @@ const Page = () => {
                     <span className="text-white font-semibold text-lg">Sign in with Google</span>
                 </Button>
                 {/* Waitlist */}
-                <Button className="bg-gray-300 rounded-md w-52 p-7 hover:bg-gray-200">
+                {/* <Button className="bg-gray-300 rounded-md w-52 p-7 hover:bg-gray-200">
                     <span className="text-black font-semibold text-lg">Join waitlist</span>
-                </Button>
+                </Button> */}
 
             </div>
         </main>
